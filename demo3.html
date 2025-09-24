@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Automotive Carousel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: all 1.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .slide.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            background: #000;
+        }
+
+        .slide.fullscreen .slide-header,
+        .slide.fullscreen .slide-footer {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide.fullscreen .slide-content {
+            padding: 80px 60px 0;
+        }
+
+        .slide-content.collapsed .slide-header {
+            opacity: 0;
+            transform: translateY(-50px);
+            pointer-events: none;
+        }
+
+        .slide-content.collapsed .slide-footer {
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: none;
+        }
+
+        /* Auto-hide content based on aspect ratio */
+        @media (max-aspect-ratio: 16/10) {
+            .slide:not(.fullscreen) .slide-content {
+                justify-content: flex-end;
+            }
+
+            .slide:not(.fullscreen) .slide-header {
+                opacity: 0;
+                transform: translateY(-30px);
+                pointer-events: none;
+            }
+
+            .slide:not(.fullscreen) .slide-footer {
+                background: rgba(0, 0, 0, 0.9);
+                backdrop-filter: blur(20px);
+            }
+        }
+
+        @media (max-aspect-ratio: 4/3) {
+            .slide:not(.fullscreen) .slide-header {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                background-attachment: scroll;
+                background-size: cover;
+                background-position: center 30%;
+            }
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 2;
+        }
+
+        .slide.next {
+            opacity: 0;
+            transform: translateX(100%) scale(0.9);
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-100%) scale(0.9);
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg,
+                    rgba(0, 0, 0, 0.4) 0%,
+                    rgba(0, 0, 0, 0.1) 30%,
+                    rgba(0, 0, 0, 0.1) 60%,
+                    rgba(0, 0, 0, 0.9) 100%);
+            z-index: 1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            padding: 80px 60px 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .slide-header {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition-delay: 0.3s;
+        }
+
+        .slide.active .slide-header {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-category {
+            font-size: 11px;
+            font-weight: 600;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .slide-category::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 2px;
+            background: #ff6b35;
+        }
+
+        .slide-title {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-description {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 650px;
+            margin-bottom: 35px;
+        }
+
+        .slide-cta {
+            display: inline-flex;
+            align-items: center;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            width: fit-content;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .slide-cta:hover::before {
+            left: 100%;
+        }
+
+        .slide-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .slide-footer {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 60px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition-delay: 0.5s;
+        }
+
+        .slide.active .slide-footer {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .footer-info p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 400;
+        }
+
+        .footer-meta {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* Thumbnails Navigation - Full Width */
+        .thumbnails-nav {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            padding: 20px 60px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .thumbnails-container {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .thumbnails-wrapper {
+            display: flex;
+            gap: 15px;
+            transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            padding: 0 10px;
+        }
+
+        .thumbnail {
+            flex-shrink: 0;
+            aspect-ratio: 16/9;
+            height: 60px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            opacity: 0.6;
+            transform: scale(0.9);
+            border: 2px solid transparent;
+        }
+
+        .thumbnail.active {
+            opacity: 1;
+            transform: scale(1);
+            border-color: #ff6b35;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .thumbnail:hover img {
+            transform: scale(1.1);
+        }
+
+        .thumbnail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail.active::before,
+        .thumbnail:hover::before {
+            opacity: 0;
+        }
+
+        .thumbnail-nav-arrow {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin: 0 10px;
+            opacity: 0.8;
+        }
+
+        .thumbnail-nav-arrow:hover {
+            background: rgba(255, 107, 53, 0.8);
+            border-color: #ff6b35;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .thumbnail-nav-arrow.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 107, 53, 0.8);
+            border-color: #ff6b35;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .nav-arrow.prev {
+            left: 40px;
+        }
+
+        .nav-arrow.next {
+            right: 40px;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            font-size: 16px;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255, 107, 53, 0.8);
+            border-color: #ff6b35;
+            transform: scale(1.1);
+        }
+
+        /* Slide transition animations */
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%) scale(0.9);
+            }
+        }
+
+        @keyframes slideOutLeft {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(-100%) scale(0.9);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide.slide-in-right {
+            animation: slideInRight 1s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide.slide-in-left {
+            animation: slideInLeft 1s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide.slide-out-right {
+            animation: slideOutRight 1s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide.slide-out-left {
+            animation: slideOutLeft 1s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .slide.fade-in {
+            animation: fadeIn 1.2s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        @media (max-width: 768px) {
+            .carousel-container {
+                height: 100vh;
+                min-height: 600px;
+            }
+
+            .slide {
+                background-attachment: scroll;
+                background-size: cover;
+                background-position: center 30%;
+            }
+
+            .slide-content {
+                padding: 40px 25px 0;
+                min-height: calc(100vh - 160px);
+            }
+
+            .slide-title {
+                font-size: clamp(2rem, 8vw, 3.5rem);
+                line-height: 1.1;
+                margin-bottom: 20px;
+            }
+
+            .slide-description {
+                font-size: 16px;
+                line-height: 1.5;
+                margin-bottom: 25px;
+            }
+
+            .slide-cta {
+                padding: 12px 24px;
+                font-size: 13px;
+            }
+
+            .slide-footer {
+                padding: 20px 25px;
+                position: absolute;
+                bottom: 120px;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.9);
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .footer-info h3 {
+                font-size: 16px;
+            }
+
+            .footer-info p {
+                font-size: 13px;
+            }
+
+            .footer-meta {
+                gap: 15px;
+            }
+
+            .meta-item {
+                font-size: 12px;
+            }
+
+            .nav-arrow {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .nav-arrow.prev {
+                left: 15px;
+            }
+
+            .nav-arrow.next {
+                right: 15px;
+            }
+
+            .thumbnails-nav {
+                bottom: 0;
+                padding: 15px 20px;
+            }
+
+            .thumbnail {
+                height: 45px;
+            }
+
+            .thumbnail-nav-arrow {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+                margin: 0 5px;
+            }
+
+            .fullscreen-btn {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+
+            /* Auto-hide on mobile portrait */
+            @media (max-aspect-ratio: 9/16) {
+                .slide:not(.fullscreen) .slide-content {
+                    justify-content: flex-end;
+                    padding: 20px 25px 0;
+                }
+
+                .slide:not(.fullscreen) .slide-header {
+                    display: none;
+                }
+
+                .slide:not(.fullscreen) .slide-footer {
+                    bottom: 80px;
+                }
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide-content {
+                padding: 30px 20px 0;
+            }
+
+            .slide-title {
+                font-size: clamp(1.8rem, 9vw, 2.8rem);
+                margin-bottom: 15px;
+            }
+
+            .slide-description {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .slide-footer {
+                padding: 15px 20px;
+                bottom: 70px;
+            }
+
+            .thumbnails-nav {
+                bottom: 10px;
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .thumbnail {
+                width: 45px;
+                height: 30px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .slide-content {
+                padding: 60px 40px 0;
+            }
+
+            .slide-title {
+                font-size: clamp(3.5rem, 5vw, 4.5rem);
+            }
+
+            .slide-footer {
+                padding: 25px 40px;
+            }
+
+            .thumbnails-nav {
+                gap: 12px;
+            }
+
+            .thumbnail {
+                width: 70px;
+                height: 45px;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .slide {
+                background-attachment: fixed;
+            }
+        }
+
+        /* Landscape phone orientation */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .carousel-container {
+                height: 100vh;
+            }
+
+            .slide-content {
+                padding: 20px 25px 0;
+                min-height: calc(100vh - 100px);
+            }
+
+            .slide-title {
+                font-size: clamp(1.5rem, 6vw, 2.5rem);
+                margin-bottom: 10px;
+            }
+
+            .slide-description {
+                font-size: 14px;
+                margin-bottom: 15px;
+                max-width: 50%;
+            }
+
+            .slide-footer {
+                bottom: 60px;
+                padding: 15px 25px;
+            }
+
+            .thumbnails-nav {
+                bottom: 8px;
+                padding: 8px;
+            }
+        }
+
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2),
+        (min-resolution: 192dpi) {
+            .slide {
+                background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB2aWV3Qm94PSIwIDAgMSAxIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXIiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzFhMWExYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzJkMmQyZCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==');
+            }
+    </style>
+</head>
+
+<body>
+    <div class="carousel-container">
+        <div class="carousel-wrapper" id="carouselWrapper">
+            <!-- Slide 1 - Hyundai Ioniq 5 N -->
+            <div class="slide active fade-in"
+                style="background-image: url('https://images.unsplash.com/photo-1617654112368-307921291f42?w=1920&h=1080&fit=crop&crop=center')">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-category">Ahora Tendencia</div>
+                        <h1 class="slide-title">Hyundai Ioniq 5 N Essential</h1>
+                        <p class="slide-description">Rendimiento más accesible, pero no para todos. Hyundai lanza en
+                            Corea una versión más económica del Ioniq 5 N, manteniendo la esencia deportiva con ajustes
+                            estratégicos para un mercado más amplio.</p>
+                        <a href="#" class="slide-cta" onclick="toggleFullscreen()">Ver Pantalla Completa →</a>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <div class="footer-content">
+                        <div class="footer-info">
+                            <h3>Hyundai Ioniq 5 N Essential</h3>
+                            <p>Rendimiento más accesible con tecnología avanzada</p>
+                        </div>
+                        <div class="footer-meta">
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>23-09-2025</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>⚡</span>
+                                <span>Eléctrico</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 - Jaguar Land Rover -->
+            <div class="slide"
+                style="background-image: url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1920&h=1080&fit=crop&crop=center')">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-category">Noticias</div>
+                        <h1 class="slide-title">Jaguar Land Rover Reinicia</h1>
+                        <p class="slide-description">Después del mayor ciberataque en su historia, la marca británica
+                            logra reanudar operaciones con sistemas de seguridad reforzados y protocolos mejorados para
+                            prevenir futuras amenazas.</p>
+                        <a href="#" class="slide-cta" onclick="toggleFullscreen()">Ver Pantalla Completa →</a>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <div class="footer-content">
+                        <div class="footer-info">
+                            <h3>Jaguar Land Rover Cybersecurity</h3>
+                            <p>Recuperación tras ciberataque masivo</p>
+                        </div>
+                        <div class="footer-meta">
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>22-09-2025</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>🔒</span>
+                                <span>Seguridad</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3 - BMW iX3 -->
+            <div class="slide"
+                style="background-image: url('https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1920&h=1080&fit=crop&crop=center')">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-category">Lanzamiento</div>
+                        <h1 class="slide-title">BMW iX3 SUV Eléctrico</h1>
+                        <p class="slide-description">El primer modelo Neue Klasse llega a Estados Unidos prometiendo
+                            autonomía récord, carga ultra-rápida y un precio competitivo bajo los $60,000. Una nueva era
+                            para BMW comienza aquí.</p>
+                        <a href="#" class="slide-cta" onclick="toggleFullscreen()">Ver Pantalla Completa →</a>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <div class="footer-content">
+                        <div class="footer-info">
+                            <h3>BMW iX3 Neue Klasse</h3>
+                            <p>SUV eléctrico para Norte América</p>
+                        </div>
+                        <div class="footer-meta">
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>21-09-2025</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>💰</span>
+                                <span>
+                                    < $60,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4 - Toyota GR Corolla -->
+            <div class="slide"
+                style="background-image: url('https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=1920&h=1080&fit=crop&crop=center')">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-category">Deportivos</div>
+                        <h1 class="slide-title">Toyota GR Corolla</h1>
+                        <p class="slide-description">La nueva actualización hace que el hot hatch japonés sea aún más
+                            radical, con mejoras en aerodinámica, suspensión y gestión térmica del motor turbo para una
+                            experiencia de manejo sin precedentes.</p>
+                        <a href="#" class="slide-cta" onclick="toggleFullscreen()">Ver Pantalla Completa →</a>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <div class="footer-content">
+                        <div class="footer-info">
+                            <h3>Toyota GR Corolla 2025</h3>
+                            <p>Hot hatch más radical que nunca</p>
+                        </div>
+                        <div class="footer-meta">
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>20-09-2025</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>🏁</span>
+                                <span>Performance</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5 - Lincoln Nautilus -->
+            <div class="slide"
+                style="background-image: url('https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1920&h=1080&fit=crop&crop=center')">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-category">Prueba de Manejo</div>
+                        <h1 class="slide-title">Lincoln Nautilus Black Label</h1>
+                        <p class="slide-description">Serenidad combinada con tecnología de vanguardia. El SUV de lujo
+                            americano redefine la experiencia premium con materiales exclusivos y una conducción que
+                            transmite confianza absoluta.</p>
+                        <a href="#" class="slide-cta" onclick="toggleFullscreen()">Ver Pantalla Completa →</a>
+                    </div>
+                </div>
+                <div class="slide-footer">
+                    <div class="footer-content">
+                        <div class="footer-info">
+                            <h3>Lincoln Nautilus 2025</h3>
+                            <p>Lujo americano redefinido</p>
+                        </div>
+                        <div class="footer-meta">
+                            <div class="meta-item">
+                                <span>📅</span>
+                                <span>19-09-2025</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>✨</span>
+                                <span>Lujo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thumbnails Navigation - Full Width -->
+        <div class="thumbnails-nav">
+            <button class="thumbnail-nav-arrow" id="thumbnailPrev" onclick="scrollThumbnails('prev')">‹</button>
+            <div class="thumbnails-container">
+                <div class="thumbnails-wrapper" id="thumbnailsWrapper">
+                    <div class="thumbnail active" data-slide="0">
+                        <img src="https://images.unsplash.com/photo-1617654112368-307921291f42?w=160&h=90&fit=crop&crop=center"
+                            alt="Hyundai Ioniq 5 N">
+                    </div>
+                    <div class="thumbnail" data-slide="1">
+                        <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=160&h=90&fit=crop&crop=center"
+                            alt="Jaguar Land Rover">
+                    </div>
+                    <div class="thumbnail" data-slide="2">
+                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=160&h=90&fit=crop&crop=center"
+                            alt="BMW iX3">
+                    </div>
+                    <div class="thumbnail" data-slide="3">
+                        <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=160&h=90&fit=crop&crop=center"
+                            alt="Toyota GR Corolla">
+                    </div>
+                    <div class="thumbnail" data-slide="4">
+                        <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?w=160&h=90&fit=crop&crop=center"
+                            alt="Lincoln Nautilus">
+                    </div>
+                    <div class="thumbnail" data-slide="5">
+                        <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=160&h=90&fit=crop&crop=center"
+                            alt="Mercedes EQS">
+                    </div>
+                    <div class="thumbnail" data-slide="6">
+                        <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=160&h=90&fit=crop&crop=center"
+                            alt="Ferrari SF90">
+                    </div>
+                    <div class="thumbnail" data-slide="7">
+                        <img src="https://images.unsplash.com/photo-1550355291-bbee04a92027?w=160&h=90&fit=crop&crop=center"
+                            alt="Porsche 911">
+                    </div>
+                </div>
+            </div>
+            <button class="thumbnail-nav-arrow" id="thumbnailNext" onclick="scrollThumbnails('next')">›</button>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <button class="nav-arrow prev" onclick="previousSlide()">‹</button>
+        <button class="nav-arrow next" onclick="nextSlide()">›</button>
+
+        <!-- Fullscreen Button -->
+        <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 8; // Increased for demo
+        const slides = document.querySelectorAll('.slide');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const thumbnailsWrapper = document.getElementById('thumbnailsWrapper');
+        const thumbnailPrev = document.getElementById('thumbnailPrev');
+        const thumbnailNext = document.getElementById('thumbnailNext');
+        let autoplayInterval;
+        let isAutoplayPaused = false;
+        let isTransitioning = false;
+        let thumbnailScrollPosition = 0;
+        let isFullscreen = false;
+
+        function calculateThumbnailScroll() {
+            const container = document.querySelector('.thumbnails-container');
+            const wrapper = thumbnailsWrapper;
+            const thumbnailWidth = thumbnails[0].offsetWidth + 15; // including gap
+            const containerWidth = container.offsetWidth;
+            const visibleThumbnails = Math.floor(containerWidth / thumbnailWidth);
+
+            return {
+                thumbnailWidth,
+                visibleThumbnails,
+                maxScroll: Math.max(0, thumbnails.length - visibleThumbnails)
+            };
+        }
+
+        function updateThumbnailArrows() {
+            const { maxScroll } = calculateThumbnailScroll();
+            thumbnailPrev.classList.toggle('disabled', thumbnailScrollPosition <= 0);
+            thumbnailNext.classList.toggle('disabled', thumbnailScrollPosition >= maxScroll);
+        }
+
+        function scrollThumbnails(direction) {
+            const { thumbnailWidth, maxScroll } = calculateThumbnailScroll();
+
+            if (direction === 'prev' && thumbnailScrollPosition > 0) {
+                thumbnailScrollPosition = Math.max(0, thumbnailScrollPosition - 1);
+            } else if (direction === 'next' && thumbnailScrollPosition < maxScroll) {
+                thumbnailScrollPosition = Math.min(maxScroll, thumbnailScrollPosition + 1);
+            }
+
+            const translateX = -thumbnailScrollPosition * thumbnailWidth;
+            thumbnailsWrapper.style.transform = `translateX(${translateX}px)`;
+            updateThumbnailArrows();
+        }
+
+        function centerActiveThumbnail() {
+            const { thumbnailWidth, visibleThumbnails } = calculateThumbnailScroll();
+            const targetPosition = Math.max(0, currentSlide - Math.floor(visibleThumbnails / 2));
+
+            if (targetPosition !== thumbnailScrollPosition) {
+                thumbnailScrollPosition = targetPosition;
+                const translateX = -thumbnailScrollPosition * thumbnailWidth;
+                thumbnailsWrapper.style.transform = `translateX(${translateX}px)`;
+                updateThumbnailArrows();
+            }
+        }
+
+        function toggleFullscreen() {
+            const activeSlide = slides[currentSlide];
+            const container = document.querySelector('.carousel-container');
+
+            if (!document.fullscreenElement) {
+                isFullscreen = true;
+                activeSlide.classList.add('fullscreen');
+
+                document.documentElement.requestFullscreen().then(() => {
+                    // Show all content in fullscreen
+                    const slideContent = activeSlide.querySelector('.slide-content');
+                    slideContent.classList.remove('collapsed');
+                }).catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    activeSlide.classList.remove('fullscreen');
+                    isFullscreen = false;
+                });
+            } else {
+                isFullscreen = false;
+                activeSlide.classList.remove('fullscreen');
+
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().then(() => {
+                        checkContentVisibility();
+                    });
+                }
+            }
+        }
+
+        function checkContentVisibility() {
+            if (isFullscreen) return;
+
+            const aspectRatio = window.innerWidth / window.innerHeight;
+            const activeSlide = slides[currentSlide];
+            const slideContent = activeSlide.querySelector('.slide-content');
+
+            // Hide content if aspect ratio is too narrow (portrait-like)
+            if (aspectRatio < 1.6) {
+                slideContent.classList.add('collapsed');
+            } else {
+                slideContent.classList.remove('collapsed');
+            }
+        }
+
+        function goToSlide(slideIndex, direction = 'fade') {
+            if (isTransitioning || slideIndex === currentSlide || slideIndex >= totalSlides) return;
+
+            isTransitioning = true;
+
+            // Remove active classes
+            if (slides[currentSlide]) {
+                slides[currentSlide].classList.remove('active', 'fade-in', 'slide-in-left', 'slide-in-right');
+            }
+            thumbnails[currentSlide].classList.remove('active');
+
+            // Add exit animation to current slide
+            if (slides[currentSlide]) {
+                if (direction === 'next') {
+                    slides[currentSlide].classList.add('slide-out-left');
+                } else if (direction === 'prev') {
+                    slides[currentSlide].classList.add('slide-out-right');
+                } else {
+                    slides[currentSlide].style.opacity = '0';
+                }
+            }
+
+            const prevSlide = currentSlide;
+            currentSlide = slideIndex;
+
+            // Add active classes to new slide
+            if (thumbnails[currentSlide]) {
+                thumbnails[currentSlide].classList.add('active');
+            }
+
+            setTimeout(() => {
+                // Remove all animation classes from previous slide
+                if (slides[prevSlide]) {
+                    slides[prevSlide].classList.remove('slide-out-left', 'slide-out-right');
+                    slides[prevSlide].style.opacity = '';
+                }
+
+                // Add active class and entrance animation to new slide
+                if (slides[currentSlide]) {
+                    slides[currentSlide].classList.add('active');
+
+                    if (direction === 'next') {
+                        slides[currentSlide].classList.add('slide-in-right');
+                    } else if (direction === 'prev') {
+                        slides[currentSlide].classList.add('slide-in-left');
+                    } else {
+                        slides[currentSlide].classList.add('fade-in');
+                    }
+
+                    checkContentVisibility();
+                }
+
+                // Center active thumbnail
+                centerActiveThumbnail();
+
+                // Reset transition flag after animation completes
+                setTimeout(() => {
+                    isTransitioning = false;
+                    if (slides[currentSlide]) {
+                        slides[currentSlide].classList.remove('slide-in-left', 'slide-in-right', 'fade-in');
+                    }
+                }, 1000);
+
+            }, direction === 'fade' ? 0 : 500);
+        }
+
+        function nextSlide() {
+            if (isTransitioning) return;
+            const next = (currentSlide + 1) % totalSlides;
+            goToSlide(next, 'next');
+        }
+
+        function previousSlide() {
+            if (isTransitioning) return;
+            const prev = (currentSlide - 1 + totalSlides) % totalSlides;
+            goToSlide(prev, 'prev');
+        }
+
+        function startAutoplay() {
+            if (autoplayInterval) clearInterval(autoplayInterval);
+            autoplayInterval = setInterval(() => {
+                if (!isAutoplayPaused && !isTransitioning) {
+                    nextSlide();
+                }
+            }, 5000);
+        }
+
+        function pauseAutoplay() {
+            isAutoplayPaused = true;
+            setTimeout(() => {
+                isAutoplayPaused = false;
+            }, 10000);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Event listeners for thumbnails
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', () => {
+                if (!isTransitioning) {
+                    goToSlide(index, 'fade');
+                    pauseAutoplay();
+                }
+            });
+        });
+
+        // Touch/swipe support
+        let startX = 0;
+        let isDragging = false;
+
+        const container = document.querySelector('.carousel-container');
+
+        container.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            pauseAutoplay();
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+
+        container.addEventListener('touchend', (e) => {
+            if (!isDragging || isTransitioning) return;
+            isDragging = false;
+
+            const endX = e.changedTouches[0].clientX;
+            const deltaX = startX - endX;
+
+            if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0) {
+                    nextSlide();
+                } else {
+                    previousSlide();
+                }
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (isTransitioning) return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    previousSlide();
+                    pauseAutoplay();
+                    break;
+                case 'ArrowRight':
+                    nextSlide();
+                    pauseAutoplay();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+            }
+        });
+
+        // Mouse hover pause
+        container.addEventListener('mouseenter', () => {
+            isAutoplayPaused = true;
+        });
+
+        container.addEventListener('mouseleave', () => {
+            isAutoplayPaused = false;
+        });
+
+        // Initialize
+        startAutoplay();
+
+        // Preload images for smoother transitions
+        function preloadImages() {
+            const imageUrls = [
+                'https://images.unsplash.com/photo-1617654112368-307921291f42?w=1920&h=1080&fit=crop&crop=center',
+                'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1920&h=1080&fit=crop&crop=center',
+                'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1920&h=1080&fit=crop&crop=center',
+                'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=1920&h=1080&fit=crop&crop=center',
+                'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1920&h=1080&fit=crop&crop=center'
+            ];
+
+            imageUrls.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        }
+
+        // Initialize preload
+        preloadImages();
+
+        // Add intersection observer for performance
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                } else {
+                    entry.target.classList.remove('in-view');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all slides
+        slides.forEach(slide => {
+            observer.observe(slide);
+        });
+
+        // Add smooth scroll behavior for better UX
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // Handle window resize for responsive behavior
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Maintain aspect ratio and positioning
+                slides.forEach(slide => {
+                    const computedStyle = window.getComputedStyle(slide);
+                    const backgroundImage = computedStyle.backgroundImage;
+
+                    if (backgroundImage && backgroundImage !== 'none') {
+                        // Force recalculation of background positioning
+                        slide.style.backgroundSize = 'cover';
+                        slide.style.backgroundPosition = window.innerWidth <= 768 ? 'center 30%' : 'center center';
+                    }
+                });
+
+                // Check content visibility after resize
+                checkContentVisibility();
+
+                // Recalculate thumbnail positioning
+                updateThumbnailArrows();
+                centerActiveThumbnail();
+            }, 250);
+        });
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateThumbnailArrows();
+            checkContentVisibility();
+        });
+
+        // Initialize thumbnail navigation
+        updateThumbnailArrows(); slide.style.backgroundPosition = window.innerWidth <= 768 ? 'center 30%' : 'center center';
+        centerActiveThumbnail();
+
+        // Recalculate thumbnail positioning
+        const thumbnailsNav = document.querySelector('.thumbnails-nav');
+        if (thumbnailsNav && window.innerWidth <= 768) {
+            thumbnailsNav.scrollLeft = (thumbnailsNav.scrollWidth - thumbnailsNav.clientWidth) / 2;
+        }
+
+        // Optimize image loading for different screen sizes
+        function loadOptimizedImages() {
+            const isHighDPI = window.devicePixelRatio > 1;
+            const isMobile = window.innerWidth <= 768;
+
+            slides.forEach((slide, index) => {
+                const baseUrls = [
+                    'https://images.unsplash.com/photo-1617654112368-307921291f42',
+                    'https://images.unsplash.com/photo-1544636331-e26879cd4d9b',
+                    'https://images.unsplash.com/photo-1555215695-3004980ad54e',
+                    'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb',
+                    'https://images.unsplash.com/photo-1502877338535-766e1452684a'
+                ];
+
+                let imageUrl = baseUrls[index];
+
+                if (isMobile) {
+                    imageUrl += '?w=768&h=1024&fit=crop&crop=center';
+                } else {
+                    imageUrl += isHighDPI ? '?w=3840&h=2160&fit=crop&crop=center' : '?w=1920&h=1080&fit=crop&crop=center';
+                }
+
+                slide.style.backgroundImage = `url('${imageUrl}')`;
+            });
+
+            // Update thumbnails too
+            thumbnails.forEach((thumbnail, index) => {
+                const img = thumbnail.querySelector('img');
+                const baseUrls = [
+                    'https://images.unsplash.com/photo-1617654112368-307921291f42',
+                    'https://images.unsplash.com/photo-1544636331-e26879cd4d9b',
+                    'https://images.unsplash.com/photo-1555215695-3004980ad54e',
+                    'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb',
+                    'https://images.unsplash.com/photo-1502877338535-766e1452684a'
+                ];
+
+                const thumbnailUrl = baseUrls[index] + (isHighDPI ? '?w=200&h=120&fit=crop&crop=center' : '?w=160&h=100&fit=crop&crop=center');
+                img.src = thumbnailUrl;
+            });
+        }
+
+        // Initialize optimized images
+        loadOptimizedImages();
+
+        // Reload optimized images on resize
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                loadOptimizedImages();
+            }, 500);
+        });
+
+        // Add loading state management
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+
+            // Trigger initial animations
+            setTimeout(() => {
+                slides[0].classList.add('active');
+            }, 100);
+        });
+
+        // Add error handling for images
+        slides.forEach((slide, index) => {
+            const bgImage = slide.style.backgroundImage;
+            if (bgImage) {
+                const img = new Image();
+                img.onload = () => {
+                    slide.classList.add('image-loaded');
+                };
+                img.onerror = () => {
+                    console.warn(`Failed to load background image for slide ${index}`);
+                    slide.style.backgroundColor = '#1a1a1a';
+                };
+                img.src = bgImage.slice(5, -2); // Remove url(" and ")
+            }
+        });
+
+        // Performance optimization: pause animations when tab is not visible
+        let isTabVisible = true;
+
+        document.addEventListener('visibilitychange', () => {
+            isTabVisible = !document.hidden;
+
+            if (!isTabVisible) {
+                isAutoplayPaused = true;
+                clearInterval(autoplayInterval);
+            } else {
+                isAutoplayPaused = false;
+                startAutoplay();
+            }
+        });
+
+        // Add accessibility improvements
+        document.addEventListener('keydown', (e) => {
+            // Handle escape key to exit fullscreen
+            if (e.key === 'Escape' && document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        });
+
+        // Add ARIA labels and roles for accessibility
+        slides.forEach((slide, index) => {
+            slide.setAttribute('role', 'tabpanel');
+            slide.setAttribute('aria-label', `Slide ${index + 1} of ${totalSlides}`);
+        });
+
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.setAttribute('role', 'tab');
+            thumbnail.setAttribute('aria-label', `Go to slide ${index + 1}`);
+            thumbnail.setAttribute('tabindex', index === 0 ? '0' : '-1');
+        });
+
+        // Update ARIA attributes when slide changes
+        function updateAriaAttributes() {
+            slides.forEach((slide, index) => {
+                slide.setAttribute('aria-hidden', index !== currentSlide);
+            });
+
+            thumbnails.forEach((thumbnail, index) => {
+                thumbnail.setAttribute('aria-selected', index === currentSlide);
+                thumbnail.setAttribute('tabindex', index === currentSlide ? '0' : '-1');
+            });
+        }
+
+        // Add smooth thumbnail scroll for mobile
+        function scrollThumbnailsToActive() {
+            if (window.innerWidth <= 768) {
+                const thumbnailsNav = document.querySelector('.thumbnails-nav');
+                const activeThumbnail = thumbnails[currentSlide];
+
+                if (thumbnailsNav && activeThumbnail) {
+                    const thumbnailLeft = activeThumbnail.offsetLeft;
+                    const thumbnailWidth = activeThumbnail.offsetWidth;
+                    const navWidth = thumbnailsNav.offsetWidth;
+
+                    const scrollLeft = thumbnailLeft - (navWidth / 2) + (thumbnailWidth / 2);
+
+                    thumbnailsNav.scrollTo({
+                        left: scrollLeft,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }
+
+        // Call thumbnail scroll when slide changes
+        const originalGoToSlide = goToSlide;
+        goToSlide = function (slideIndex, direction) {
+            originalGoToSlide.call(this, slideIndex, direction);
+            updateAriaAttributes();
+            setTimeout(scrollThumbnailsToActive, 100);
+        };
+
+        // Initialize ARIA attributes
+        updateAriaAttributes();
+    </script>
+</body>
+
+</html>
