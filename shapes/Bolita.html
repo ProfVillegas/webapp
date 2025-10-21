@@ -28,6 +28,24 @@ class Moving {
     set x(value){
         this.#x=value;
     }
+    get y(){
+        return this.#y;
+    }
+    set y(value){
+        this.#y=value;
+    }
+    get dx(){
+        return this.#dx;
+    }
+    set dx(value){
+        this.#dx=value;
+    }
+    get dy(){
+        return this.#dy;
+    }
+    set dy(value){
+        this.#dy=value;
+    }
 
     updatePosition(){
         this.#x+=this.#dx;
