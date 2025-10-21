@@ -28,6 +28,11 @@ class Moving {
     set x(value){
         this.#x=value;
     }
+
+    updatePosition(){
+        this.#x+=this.#dx;
+        this.#y+=this.#dy;
+    }
 }   
 </script>    
 </body>
