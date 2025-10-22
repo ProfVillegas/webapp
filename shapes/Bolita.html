@@ -100,48 +100,76 @@
 
         }
 
-        class Main{
-           #container;
-           #circle;
-           #animateID;
-           #isRunning;
-           #bounceCount;
-           
-           constructor(containerID){
-                this.#container=document.getElementById(containerID);
-                this.#circle=null; 
-                this.#animateID=null;
-                this.#isRunning=false;
-                this.#isRunning=0;
+        class Main {
+            #container;
+            #circle;
+            #animateID;
+            #isRunning;
+            #bounceCount;
+
+            constructor(containerID) {
+                this.#container = document.getElementById(containerID);
+                this.#circle = null;
+                this.#animateID = null;
+                this.#isRunning = false;
+                this.#isRunning = 0;
 
                 //Inicar el programa
 
                 //Escuchar los controles
-           }
-           init(){
-            const containerRect=this.#container.getBoundingClientRect();
-            const radius=40;
+            }
+            init() {
+                const containerRect = this.#container.getBoundingClientRect();
+                const radius = 40;
 
-            //Posicion iniical centrada
-            const x = containerRect.width/2;
-            const y= containerRect.height/2;
+                //Posicion iniical centrada
+                const x = containerRect.width / 2;
+                const y = containerRect.height / 2;
 
-            //Velocidad inicial
-            const dx=3;
-            const dy=3;
+                //Velocidad inicial
+                const dx = 3;
+                const dy = 3;
 
-            //Crear el circulo
-            this.#circle= new Circle(x,y,dx,dy,radius,'#fb8b24');
-            this.#container.appendChild(this.#circle.createElement());
-            
-            //Actualizar la información en el panel
-           }
-           initEventListeners(){
-            document.getElementById('btnStar').addEventListener('click',()=>{
+                //Crear el circulo
+                this.#circle = new Circle(x, y, dx, dy, radius, '#fb8b24');
+                this.#container.appendChild(this.#circle.createElement());
 
-            });
+                //Actualizar la información en el panel
+            }
+            initEventListeners() {
+                document.getElementById('btnStart').addEventListener('click', () => {
+                    //llamar al metodo start
+                });
 
-           }
+
+                document.getElementById('btnPause').addEventListener('click', () => {
+                    //llamar al metodo pause
+                });
+
+
+                document.getElementById('btnReset').addEventListener('click', () => {
+                    //llamar al metodo reset
+                });
+
+            }
+
+            start(){
+                if(!this.#isRunning){
+                    this.#isRunning=true;
+                    //llamar al metodo animate
+                }
+            }
+            pause(){
+                this.#isRunning=false;
+                if(this.#animateID){
+                    //Cancelar animación en el canvas - container
+
+                    this.#animateID=null;
+                }
+            }
+            reset(){
+                
+            }
         }
 
     </script>
