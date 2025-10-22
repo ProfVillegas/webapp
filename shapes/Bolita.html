@@ -63,7 +63,32 @@ class Circle extends Moving{
         this.#radius=radius;
         this.#element=null;
     }
+    //Getters y Setters
+    get radius(){ return this.#radius;}
+    set radius(value){this.#radius=value;}
+
+    get color(){return this.#color;}
+    set color(value){this.#color=value;}
+
+    get element(){return this.#element;}
+    
+    //Método para crear el element visual del circulo
+    createElement(){
+        const circleElement=document.createElement('div');
+        circleElement.className="circle";
+        circleElement.style.width=`${this.#radius*2}px`;
+        circleElement.style.height=(this.#radius*2)+'px';
+        circleElement.style.backgroundColor=this.#color;
+        circleElement.style.top=(this.y-(this.#radius*2))+"px";
+        circleElement.style.left=(this.x-(this.#radius*2))+"px";
+
+        this.#element=circleElement;
+        return circleElement;
+
+    }
+
 }
+
 </script>    
 </body>
 </html>
