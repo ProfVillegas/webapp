@@ -168,7 +168,28 @@
                 }
             }
             reset(){
+                this.pause();
+                this.#bounceCount=0;
+
+                const containerRect=this.#container.getBoundingClientRect();
+                const radius=this.#circle.radius;
+
+                const x=containerRect.width/2;
+                const y=containerRect.height/2;
+
+                const dx=3;
+                const dy=3;
+
+                this.#circle.x=x;
+                this.#circle.y=y;
+
+                this.#circle.dx=dx;
+                this.#circle.dy=dy;
+
+                this.#circle.updateElement();
                 
+                //Actualizar la información del Panel
+
             }
         }
 
