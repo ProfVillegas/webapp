@@ -52,6 +52,18 @@ class Moving {
         this.#y+=this.#dy;
     }
 }   
+class Circle extends Moving{
+    #radius;
+    #color;
+    #element;
+
+    constructor(x,y,dx,dy,radius,color){
+        super(x,y,dx,dy);
+        this.#color=color;
+        this.#radius=radius;
+        this.#element=null;
+    }
+}
 </script>    
 </body>
 </html>
