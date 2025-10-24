@@ -191,6 +191,65 @@
                 //Actualizar la información del Panel
 
             }
+
+            updateInfo(){
+                if(this.#circle){
+                    document.getElementById('posX').textContent=Math.round(this.#circle.x);
+                    document.getElementById('posY').textContent=Math.round(this.#circle.y);
+                    document.getElementById('velX').textContent=this.#circle.dx.toFixed(1);
+                    document.getElementById('velY').textContent=this.#circle.dy.toFixed(1);
+                    document.getElementById('bounceCount').textContent=this.#bounceCount;
+
+                }
+            }
+            // Método principal de animación
+            animate() {
+                if (!this.#isRunning) return;
+                
+                const containerRect = this.#container.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const containerHeight = containerRect.height;
+                
+                // Actualizar posición del círculo
+                this.#circle.updatePosition();
+                
+                // Detectar colisión con los bordes del contenedor
+                let bounced = false;
+                
+                if (this.#circle.x - this.#circle.radius <= 0) {
+                    this.#circle.dx = Math.abs(this.#circle.dx);
+                    this.#circle.x = this.#circle.radius;
+                    bounced = true;
+                } else if (this.#circle.x + this.#circle.radius >= containerWidth) {
+                    this.#circle.dx = -Math.abs(this.#circle.dx);
+                    this.#circle.x = containerWidth - this.#circle.radius;
+                    bounced = true;
+                }
+                
+                if (this.#circle.y - this.#circle.radius <= 0) {
+                    this.#circle.dy = Math.abs(this.#circle.dy);
+                    this.#circle.y = this.#circle.radius;
+                    bounced = true;
+                } else if (this.#circle.y + this.#circle.radius >= containerHeight) {
+                    this.#circle.dy = -Math.abs(this.#circle.dy);
+                    this.#circle.y = containerHeight - this.#circle.radius;
+                    bounced = true;
+                }
+                
+                // Incrementar contador de rebotes si hubo colisión
+                if (bounced) {
+                    this.#bounceCount++;
+                }
+                
+                // Actualizar elemento visual
+                this.#circle.updateElement();
+                
+                // Actualizar panel de información
+                this.updateInfoPanel();
+                
+                // Solicitar siguiente frame de animación
+                this.#animateID = requestAnimationFrame(() => this.animate());
+            }
         }
 
     </script>
