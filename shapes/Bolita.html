@@ -115,8 +115,10 @@
                 this.#isRunning = 0;
 
                 //Inicar el programa
+                init();
 
                 //Escuchar los controles
+                initEventListeners();
             }
             init() {
                 const containerRect = this.#container.getBoundingClientRect();
@@ -135,20 +137,24 @@
                 this.#container.appendChild(this.#circle.createElement());
 
                 //Actualizar la información en el panel
+                updateInfo();
             }
             initEventListeners() {
                 document.getElementById('btnStart').addEventListener('click', () => {
                     //llamar al metodo start
+                    this.start();
                 });
 
 
                 document.getElementById('btnPause').addEventListener('click', () => {
                     //llamar al metodo pause
+                    this.pause();
                 });
 
 
                 document.getElementById('btnReset').addEventListener('click', () => {
                     //llamar al metodo reset
+                    this.reset();
                 });
 
             }
@@ -157,13 +163,14 @@
                 if(!this.#isRunning){
                     this.#isRunning=true;
                     //llamar al metodo animate
+                    this.animate();
                 }
             }
             pause(){
                 this.#isRunning=false;
                 if(this.#animateID){
                     //Cancelar animación en el canvas - container
-
+                    cancelAnimationFrame(this.#animateID);
                     this.#animateID=null;
                 }
             }
@@ -189,6 +196,7 @@
                 this.#circle.updateElement();
                 
                 //Actualizar la información del Panel
+                this.updateInfo();
 
             }
 
@@ -245,7 +253,7 @@
                 this.#circle.updateElement();
                 
                 // Actualizar panel de información
-                this.updateInfoPanel();
+                this.updateInfo();
                 
                 // Solicitar siguiente frame de animación
                 this.#animateID = requestAnimationFrame(() => this.animate());
