@@ -5,13 +5,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rebote de una bolita</title>
+    <style>
+        *,
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #wrap {
+            text-align: center;
+            width: 800px;
+            margin: 0 auto;
+        }
+
+        #lienzo {
+            width: 800px;
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+            background-color: #1d3557;
+        }
+
+        .circle {
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        #info {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-around;
+        }
+
+        .item {
+            padding: 20px;
+            margin: auto;
+        }
+        #controles {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-around;
+
+        }
+    </style>
 </head>
 
 <body>
     <div id="wrap">
         <h1>Programa de rebote de una bolita</h1>
         <p>En esta animación vamos a simular el rebote de una bolita
-             por un espacio cuadrado.</p>
+            por un espacio cuadrado.</p>
         <div id="controles">
             <input type="button" value="Iniciar" id="btnStart">
             <input type="button" value="Detener" id="btnPause">
@@ -23,12 +67,12 @@
                 <div class="label">Posicion X</div>
                 <div class="value" id="posX"></div>
             </div>
-            
+
             <div class="item">
                 <div class="label">Posicion Y</div>
                 <div class="value" id="posY"></div>
             </div>
-            
+
             <div class="item">
                 <div class="label">Vel X</div>
                 <div class="value" id="velX"></div>
@@ -37,7 +81,7 @@
                 <div class="label">Vel Y</div>
                 <div class="value" id="velY"></div>
             </div>
-            
+
             <div class="item">
                 <div class="label">Rebotes</div>
                 <div class="value" id="bounceCount"></div>
@@ -59,7 +103,7 @@
                 this.#x = x;
                 this.#y = y;
                 this.#dx = dx;
-                this.#dy = y;
+                this.#dy = dy;
             }
             get x() {
                 return this.#x;
@@ -111,27 +155,28 @@
 
             get element() { return this.#element; }
 
-            //Método para crear el element visual del circulo
+            // Método para crear el elemento visual del círculo
             createElement() {
                 const circleElement = document.createElement('div');
-                circleElement.className = "circle";
+                circleElement.className = 'circle';
                 circleElement.style.width = `${this.#radius * 2}px`;
-                circleElement.style.height = (this.#radius * 2) + 'px';
+                circleElement.style.height = `${this.#radius * 2}px`;
                 circleElement.style.backgroundColor = this.#color;
-                circleElement.style.top = (this.y - (this.#radius * 2)) + "px";
-                circleElement.style.left = (this.x - (this.#radius * 2)) + "px";
+                circleElement.style.left = `${this.x - this.#radius}px`;
+                circleElement.style.top = `${this.y - this.#radius}px`;
 
                 this.#element = circleElement;
                 return circleElement;
-
             }
+
+            // Método para actualizar la posición visual del círculo
             updateElement() {
                 if (this.#element) {
-                    circleElement.style.width = `${this.#radius * 2}px`;
-                    circleElement.style.height = (this.#radius * 2) + 'px';
-                    circleElement.style.backgroundColor = this.#color;
-                    circleElement.style.top = (this.y - (this.#radius * 2)) + "px";
-                    circleElement.style.left = (this.x - (this.#radius * 2)) + "px";
+                    this.#element.style.left = `${this.x - this.#radius}px`;
+                    this.#element.style.top = `${this.y - this.#radius}px`;
+                    this.#element.style.backgroundColor = this.#color;
+                    this.#element.style.width = `${this.#radius * 2}px`;
+                    this.#element.style.height = `${this.#radius * 2}px`;
                 }
             }
 
@@ -149,13 +194,13 @@
                 this.#circle = null;
                 this.#animateID = null;
                 this.#isRunning = false;
-                this.#isRunning = 0;
+                this.#bounceCount = 0;
 
                 //Inicar el programa
-                init();
+                this.init();
 
                 //Escuchar los controles
-                initEventListeners();
+                this.initEventListeners();
             }
             init() {
                 const containerRect = this.#container.getBoundingClientRect();
@@ -170,11 +215,11 @@
                 const dy = 3;
 
                 //Crear el circulo
-                this.#circle = new Circle(x, y, dx, dy, radius, '#fb8b24');
+                this.#circle = new Circle(x, y, dx, dy, radius, '#e63946');
                 this.#container.appendChild(this.#circle.createElement());
 
                 //Actualizar la información en el panel
-                updateInfo();
+                this.updateInfo();
             }
             initEventListeners() {
                 document.getElementById('btnStart').addEventListener('click', () => {
@@ -196,71 +241,71 @@
 
             }
 
-            start(){
-                if(!this.#isRunning){
-                    this.#isRunning=true;
+            start() {
+                if (!this.#isRunning) {
+                    this.#isRunning = true;
                     //llamar al metodo animate
                     this.animate();
                 }
             }
-            pause(){
-                this.#isRunning=false;
-                if(this.#animateID){
+            pause() {
+                this.#isRunning = false;
+                if (this.#animateID) {
                     //Cancelar animación en el canvas - container
                     cancelAnimationFrame(this.#animateID);
-                    this.#animateID=null;
+                    this.#animateID = null;
                 }
             }
-            reset(){
+            reset() {
                 this.pause();
-                this.#bounceCount=0;
+                this.#bounceCount = 0;
 
-                const containerRect=this.#container.getBoundingClientRect();
-                const radius=this.#circle.radius;
+                const containerRect = this.#container.getBoundingClientRect();
+                const radius = this.#circle.radius;
 
-                const x=containerRect.width/2;
-                const y=containerRect.height/2;
+                const x = containerRect.width / 2;
+                const y = containerRect.height / 2;
 
-                const dx=3;
-                const dy=3;
+                const dx = 3;
+                const dy = 3;
 
-                this.#circle.x=x;
-                this.#circle.y=y;
+                this.#circle.x = x;
+                this.#circle.y = y;
 
-                this.#circle.dx=dx;
-                this.#circle.dy=dy;
+                this.#circle.dx = dx;
+                this.#circle.dy = dy;
 
                 this.#circle.updateElement();
-                
+
                 //Actualizar la información del Panel
                 this.updateInfo();
 
             }
 
-            updateInfo(){
-                if(this.#circle){
-                    document.getElementById('posX').textContent=Math.round(this.#circle.x);
-                    document.getElementById('posY').textContent=Math.round(this.#circle.y);
-                    document.getElementById('velX').textContent=this.#circle.dx.toFixed(1);
-                    document.getElementById('velY').textContent=this.#circle.dy.toFixed(1);
-                    document.getElementById('bounceCount').textContent=this.#bounceCount;
+            updateInfo() {
+                if (this.#circle) {
+                    document.getElementById('posX').textContent = Math.round(this.#circle.x);
+                    document.getElementById('posY').textContent = Math.round(this.#circle.y);
+                    document.getElementById('velX').textContent = this.#circle.dx.toFixed(1);
+                    document.getElementById('velY').textContent = this.#circle.dy.toFixed(1);
+                    document.getElementById('bounceCount').textContent = this.#bounceCount;
 
                 }
             }
             // Método principal de animación
             animate() {
                 if (!this.#isRunning) return;
-                
+
                 const containerRect = this.#container.getBoundingClientRect();
                 const containerWidth = containerRect.width;
                 const containerHeight = containerRect.height;
-                
+
                 // Actualizar posición del círculo
                 this.#circle.updatePosition();
-                
+
                 // Detectar colisión con los bordes del contenedor
                 let bounced = false;
-                
+
                 if (this.#circle.x - this.#circle.radius <= 0) {
                     this.#circle.dx = Math.abs(this.#circle.dx);
                     this.#circle.x = this.#circle.radius;
@@ -270,7 +315,7 @@
                     this.#circle.x = containerWidth - this.#circle.radius;
                     bounced = true;
                 }
-                
+
                 if (this.#circle.y - this.#circle.radius <= 0) {
                     this.#circle.dy = Math.abs(this.#circle.dy);
                     this.#circle.y = this.#circle.radius;
@@ -280,25 +325,25 @@
                     this.#circle.y = containerHeight - this.#circle.radius;
                     bounced = true;
                 }
-                
+
                 // Incrementar contador de rebotes si hubo colisión
                 if (bounced) {
                     this.#bounceCount++;
                 }
-                
+
                 // Actualizar elemento visual
                 this.#circle.updateElement();
-                
+
                 // Actualizar panel de información
                 this.updateInfo();
-                
+
                 // Solicitar siguiente frame de animación
                 this.#animateID = requestAnimationFrame(() => this.animate());
             }
         }
 
         //Inicializar la animación invocando a Main
-        document.addEventListener('DOMContentLoaded',()=>{
+        document.addEventListener('DOMContentLoaded', () => {
             const villegas = new Main('lienzo');
             villegas.start();
         });
