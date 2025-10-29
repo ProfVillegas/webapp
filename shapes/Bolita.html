@@ -42,11 +42,56 @@
             padding: 20px;
             margin: auto;
         }
+
         #controles {
             display: flex;
-            flex-flow: row wrap;
-            justify-content: space-around;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
 
+        #controles input {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            box-shadow: #333 0px 8px 4px 0px;
+            background-color: #f1faee;
+            border-radius: 2px;
+        }
+
+        #controles input[type="button"]:hover {
+            background-color: #a8dadc;
+        }
+
+        #controles input[type="colorpicker"] {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 10px;
+            font-size: 1rem;
+            padding: 10px;
+            border: 0;
+            height: 37px;
+            margin: 0;
+        }
+        #editables {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+        #editables label {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            box-shadow: #333 0px 8px 4px 0px;
+            background-color: #f1faee;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -86,6 +131,18 @@
                 <div class="label">Rebotes</div>
                 <div class="value" id="bounceCount"></div>
             </div>
+        </div>
+        <!--Editables-->
+        <div id="editables">
+            <label for="colorPicker"> Color:
+                <input type="color" id="colorPicker" value="#ff4757">
+            </label>
+            <label for="radius"> Radius:
+                <input type="range" id="radius" max="100" value="40" min="20">
+            </label>
+            <label for="speed">Speed:
+                <input type="range" id="speed" max="100" value="30" min="7">
+            </label>
         </div>
 
     </div>
@@ -188,6 +245,7 @@
             #animateID;
             #isRunning;
             #bounceCount;
+            #speed;
 
             constructor(containerID) {
                 this.#container = document.getElementById(containerID);
@@ -195,6 +253,7 @@
                 this.#animateID = null;
                 this.#isRunning = false;
                 this.#bounceCount = 0;
+                this.#speed = 3;
 
                 //Inicar el programa
                 this.init();
@@ -211,8 +270,8 @@
                 const y = containerRect.height / 2;
 
                 //Velocidad inicial
-                const dx = 3;
-                const dy = 3;
+                const dx = this.#speed;
+                const dy = this.#speed;
 
                 //Crear el circulo
                 this.#circle = new Circle(x, y, dx, dy, radius, '#e63946');
@@ -237,6 +296,31 @@
                 document.getElementById('btnReset').addEventListener('click', () => {
                     //llamar al metodo reset
                     this.reset();
+                });
+                //Editables
+                //Cambiar el color
+                document.getElementById('colorPicker').addEventListener('input', (e) => {
+                    if (this.#circle) {
+                        this.#circle.color = e.target.value;
+                    }
+                });
+                //Cambiar radio
+                document.getElementById('radius').addEventListener('input', (e) => {
+                    if (this.#circle) {
+                        this.#circle.radius = parseInt(e.target.value);
+                        this.#circle.updateElement();
+                    }
+                });
+                document.getElementById('speed').addEventListener('input', (e) => {
+                    if (this.#circle) {
+                        const speed = parseInt(e.target.value);
+                        // Ajustar la velocidad manteniendo la dirección
+                        const currentSpeed = Math.sqrt(this.#circle.dx ** 2 + this.#circle.dy ** 2);
+                        const ratio = speed / currentSpeed;
+
+                        this.#circle.dx *= ratio;
+                        this.#circle.dy *= ratio;
+                    }
                 });
 
             }
@@ -266,8 +350,8 @@
                 const x = containerRect.width / 2;
                 const y = containerRect.height / 2;
 
-                const dx = 3;
-                const dy = 3;
+                const dx = Math.random() < 0.5 ? this.#speed : (-1 * (this.#speed));
+                const dy = Math.random() < 0.5 ? this.#speed : (-1 * (this.#speed));
 
                 this.#circle.x = x;
                 this.#circle.y = y;
@@ -329,6 +413,7 @@
                 // Incrementar contador de rebotes si hubo colisión
                 if (bounced) {
                     this.#bounceCount++;
+
                 }
 
                 // Actualizar elemento visual
