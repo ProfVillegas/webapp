@@ -22,22 +22,27 @@
 
             // Método para obtener información básica del producto
             obtenerInfo() {
-                
+                return `${this.nombre} : $ ${this.precio.toFixed(2)}`;
             }
 
             // Método para verificar disponibilidad
-            estaDisponible() {
+            estaDisponible(cantidad =1) {
+                return this.stock>=cantidad;
                 
             }
 
             // Método para reducir stock
-            reducirStock() {
-                
+            reducirStock(cantidad = 1) {
+                if(this.estaDisponible(cantidad)){
+                    this.stock-=cantidad;
+                    return true;
+                }
+                return false;
             }
 
             // Método para aumentar stock
-            aumentarStock() {
-                
+            aumentarStock(cantidad =1) {
+                this.stock+=cantidad;
             }
         }
 
@@ -51,11 +56,13 @@
 
             // Polimorfismo: Sobrescribimos el método obtenerInfo
             obtenerInfo() {
-               
+               return `${this.nombre} : $ ${this.precio.toFixed(2)} (${this.temporada})`;
             }
 
             // Método específico para frutas
             esDeTemporada() {
+                const mesActual = new Date().getMonth()+1;
+                return this.temporada.includes(mesActual);
             }
         }
 
@@ -66,32 +73,64 @@
             }
 
             // Agregar producto al carrito
-            agregarProducto() {
-                
+            agregarProducto(producto, cantidad = 1) {
+                const itemExist = this.items.find(item=>item.producto.id===producto.id);
+                if(itemExist){
+                    itemExist.cantidad+=cantidad;
+                } else {
+                    this.items.push({
+                        producto:producto,
+                        cantidad:cantidad
+                    });
+                }
             }
 
             // Eliminar producto del carrito
-            eliminarProducto() {
+            eliminarProducto(id) {
+                this.items=this.items.filter(item=> item.producto.id !==id);
 
             }
 
             // Actualizar cantidad de un producto
             actualizarCantidad(id, cantidad) {
-                
+                const item = this.items.find(item => item.producto.id===id);
+                if(item){
+                    if(cantidad<=0){
+                        this.eliminarProducto(id);
+                    } else {
+                        item.cantidad=cantidad;
+                    }
+                }
             }
 
             // Calcular el total del carrito
             calcularTotal() {
-                
+                return this.items.reduce((total, item)=>{
+                    return total+(item.producto.precio * item.producto.cantidad);
+                },0);
             }
 
             // Vaciar el carrito
             vaciar() {
-                
+                this.items=[];
             }
 
             // Realizar compra (reducir stock de productos)
             realizarCompra() {
+                const productosSinStock=[];
+
+                this.items.forEach( item =>{
+                    if(!item.producto.estaDisponible(item.cantidad)){
+                        productosSinStock.push(item.producto.nombre);
+                    }
+                });
+
+                if(productosSinStock.length>0){
+                    return{
+                        exito:false,
+                        mensaje:`No hay suficiente stock para: ${productosSinStock.join(', ')}`
+                    }
+                }
 
             }
         }
@@ -195,7 +234,7 @@
 
             // Realizar compra
             realizarCompra() {
-                
+
             }
         }
 
