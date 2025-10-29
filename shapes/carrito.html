@@ -6,6 +6,199 @@
     <title>Tienda Las Manzanitas</title>
 </head>
 <body>
-    
+
+    <script>
+        // ========== MODELO ==========
+
+        // Clase padre Producto
+        class Producto {
+            constructor(id, nombre, precio, stock, categoria) {
+                this.id = id;
+                this.nombre = nombre;
+                this.precio = precio;
+                this.stock = stock;
+                this.categoria = categoria;
+            }
+
+            // Método para obtener información básica del producto
+            obtenerInfo() {
+                
+            }
+
+            // Método para verificar disponibilidad
+            estaDisponible() {
+                
+            }
+
+            // Método para reducir stock
+            reducirStock() {
+                
+            }
+
+            // Método para aumentar stock
+            aumentarStock() {
+                
+            }
+        }
+
+        // Clase hija Fruta que hereda de Producto
+        class Fruta extends Producto {
+            constructor(id, nombre, precio, stock, categoria, temporada, origen) {
+                super(id, nombre, precio, stock, categoria);
+                this.temporada = temporada;
+                this.origen = origen;
+            }
+
+            // Polimorfismo: Sobrescribimos el método obtenerInfo
+            obtenerInfo() {
+               
+            }
+
+            // Método específico para frutas
+            esDeTemporada() {
+            }
+        }
+
+        // Clase para el carrito de compras
+        class Carrito {
+            constructor() {
+                this.items = [];
+            }
+
+            // Agregar producto al carrito
+            agregarProducto() {
+                
+            }
+
+            // Eliminar producto del carrito
+            eliminarProducto() {
+
+            }
+
+            // Actualizar cantidad de un producto
+            actualizarCantidad(id, cantidad) {
+                
+            }
+
+            // Calcular el total del carrito
+            calcularTotal() {
+                
+            }
+
+            // Vaciar el carrito
+            vaciar() {
+                
+            }
+
+            // Realizar compra (reducir stock de productos)
+            realizarCompra() {
+
+            }
+        }
+
+        // Clase para gestionar el inventario
+        class Inventario {
+            constructor() {
+                this.productos = [];
+                this.cargarProductosIniciales();
+            }
+
+            // Cargar productos de ejemplo
+            cargarProductosIniciales() {
+                
+            }
+
+            // Obtener todos los productos
+            obtenerProductos() {
+                
+            }
+
+            // Obtener productos por categoría
+            obtenerProductosPorCategoria() {
+                
+            }
+
+            // Buscar producto por ID
+            obtenerProductoPorId() {
+                
+            }
+        }
+
+        // ========== VISTA ==========
+
+        class Vista {
+            constructor() {
+                
+            }
+
+            // Mostrar productos en la interfaz
+            mostrarProductos(productos) {
+                
+            }
+
+            // Mostrar items del carrito
+            mostrarCarrito(carrito) {
+                
+            }
+
+            // Mostrar mensaje al usuario
+            mostrarMensaje() {
+                
+            }
+
+            // Actualizar filtros activos
+            actualizarFiltros() {
+                
+            }
+        }
+
+        // ========== CONTROLADOR ==========
+
+        class Controlador {
+            constructor(modelo, vista) {
+                this.modelo = modelo;
+                this.vista = vista;
+                this.carrito = new Carrito();
+                
+                this.inicializarEventos();
+                this.cargarProductos();
+            }
+
+            // Inicializar eventos de la interfaz
+            inicializarEventos() {
+                
+            }
+
+            // Cargar productos en la vista
+            cargarProductos() {
+            }
+
+            // Filtrar productos por categoría
+            filtrarProductos(categoria) {
+                
+            }
+
+            // Agregar producto al carrito
+            agregarAlCarrito() {
+
+            }
+
+            // Eliminar producto del carrito
+            eliminarDelCarrito() {
+                
+            }
+
+            // Modificar cantidad de producto en el carrito
+            modificarCantidad() {
+                
+            }
+
+            // Realizar compra
+            realizarCompra() {
+                
+            }
+        }
+
+    </script>
 </body>
 </html>
