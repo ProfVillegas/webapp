@@ -128,7 +128,8 @@
                 if(productosSinStock.length>0){
                     return{
                         exito:false,
-                        mensaje:`No hay suficiente stock para: ${productosSinStock.join(', ')}`
+                        mensaje:`No hay suficiente stock para: ${productosSinStock.join(', ')}`,
+                        total:total
                     }
                 }
 
@@ -144,7 +145,20 @@
 
             // Cargar productos de ejemplo
             cargarProductosIniciales() {
-                
+                this.productos=[
+                    new Fruta(1,"Manzana Roja",48.50,50,"frutilla",[9,10,11,12],"Argentina"),
+                    new Fruta(2, "Platano Chiapas",17.40,100,'tropical',[1,2,3,4,5,6,7,8,9,10,11,12],"México"),
+                    new Fruta(3, "Naranja", 1.50, 30, "citrico", [5, 6, 7, 8, 9, 10], "España"),
+                    new Fruta(4, "Fresa", 2.50, 20, "frutilla", [3, 4, 5, 6], "México"),
+                    new Fruta(5, "Piña", 3.00, 15, "tropical", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "Costa Rica"),
+                    new Fruta(6, "Limón", 1.00, 40, "citrico", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "Argentina"),
+                    new Fruta(7, "Uva", 2.20, 25, "frutilla", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "Chile"),
+                    new Fruta(8, "Mango Ataúlfo", 2.80, 18, "tropical", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "México"),
+                    new Fruta(9, "Pera", 1.70, 35, "frutilla", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "Argentina"),
+                    new Fruta(10, "Kiwi", 2.10, 22, "frutilla", [3, 4, 5, 6, 7, 8, 9], "Nueva Zelanda")
+
+
+                ];
             }
 
             // Obtener todos los productos
