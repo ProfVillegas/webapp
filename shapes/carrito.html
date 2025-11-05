@@ -163,17 +163,20 @@
 
             // Obtener todos los productos
             obtenerProductos() {
-                
+                return this.productos;
             }
 
             // Obtener productos por categoría
-            obtenerProductosPorCategoria() {
-                
+            obtenerProductosPorCategoria(categoria) {
+                if (categoria === "todos") {
+                    return this.productos;
+                }
+                return this.productos.filter(producto => producto.categoria === categoria);
             }
 
             // Buscar producto por ID
-            obtenerProductoPorId() {
-                
+            obtenerProductoPorId(id) {
+                return this.productos.find(producto => producto.id === id);
             }
         }
 
@@ -181,28 +184,118 @@
 
         class Vista {
             constructor() {
-                
+                this.productosContainer = document.getElementById('productos-container');// Contenedor de los productos (frutas)
+                this.carritoItems = document.getElementById('carrito-items'); // Contenedor de los productos que se agreguen a la compra
+                this.carritoTotal = document.getElementById('carrito-total'); // Contenedor de el total a pagar
+                this.btnComprar = document.getElementById('btn-comprar');// Botón par agregar productos
+                this.filtros = document.querySelectorAll('.filtro-btn');// Botón para filtrar
             }
 
             // Mostrar productos en la interfaz
             mostrarProductos(productos) {
+                //Inicializamos el conteedor de productor en blanco
+                 this.productosContainer.innerHTML = '';
+                 
+                 //Se verifica que exista algún producto
+                 if (productos.length === 0) {
+                    this.productosContainer.innerHTML = '<div class="vacio">No hay productos disponibles</div>';
+                    return;
+                }
+
+                //Se hace el listado de iconos
+                // Emoji representativo para cada fruta usando el ID del producto
+                    const emojis = {
+                        1: "🍎",
+                        2: "🍌",
+                        3: "🍊",
+                        4: "🍓",
+                        5: "🍍",
+                        6: "🍋",
+                        7: "🍇",
+                        8: "🥭",
+                        9: "🍐",
+                        10: "🥝"
+                    };
+
+                //Si existe ,se recorrre todos los productos del array
+                productos.forEach(producto => {
+                    //Creamos el DIV para contener la información del producto
+                    const productoCard = document.createElement('div');
+
+                    //Se le agrega la clase al DIV nuevo
+                    productoCard.className = 'producto-card';
+                    
+                    
+                    //Si no existe arreglo se toma como predeterminado el primer icono
+                    const emoji = emojis[producto.id] || "🍎";
+
+                    //Se crea la estructura de cada de producto
+                    productoCard.innerHTML = `
+                        <div class="producto-imagen">${emoji}</div>
+                        <div class="producto-info">
+                            <h3 class="producto-nombre">${producto.nombre}</h3>
+                            <p class="producto-precio">$${producto.precio.toFixed(2)}</p>
+                            <p class="producto-descripcion">Origen: ${producto.origen}</p>
+                            <p class="producto-stock">Stock: ${producto.stock} unidades</p>
+                            <div class="producto-acciones">
+                                <button class="btn btn-agregar" data-id="${producto.id}">Agregar al carrito</button>
+                            </div>
+                        </div>
+                    `;
+                    //Se agrega al contenedor el producto el nuevo producto
+                    this.productosContainer.appendChild(productoCard);
+                });
                 
             }
 
             // Mostrar items del carrito
             mostrarCarrito(carrito) {
-                
+                this.carritoItems.innerHTML = '';
+
+                if (carrito.items.length === 0) {
+                    this.carritoItems.innerHTML = '<div class="vacio">Tu carrito está vacío</div>';
+                    this.carritoTotal.textContent = 'Total: $0.00';
+                    return;
+                }
+
+                carrito.items.forEach(item => {
+                    const carritoItem = document.createElement('div');
+                    carritoItem.className = 'carrito-item';
+                    
+                    carritoItem.innerHTML = `
+                        <div class="carrito-item-info">
+                            <h4>${item.producto.nombre}</h4>
+                            <p>$${item.producto.precio.toFixed(2)} c/u</p>
+                        </div>
+                        <div class="carrito-item-cantidad">
+                            <button class="cantidad-btn" data-id="${item.producto.id}" data-accion="restar">-</button>
+                            <span>${item.cantidad}</span>
+                            <button class="cantidad-btn" data-id="${item.producto.id}" data-accion="sumar">+</button>
+                            <button class="btn btn-eliminar" data-id="${item.producto.id}">Eliminar</button>
+                        </div>
+                    `;
+
+                    this.carritoItems.appendChild(carritoItem);
+                });
+
+                this.carritoTotal.textContent = `Total: $${carrito.calcularTotal().toFixed(2)}`;
             }
 
             // Mostrar mensaje al usuario
             mostrarMensaje() {
-                
+               alert(mensaje); // En una aplicación real, usaríamos un sistema de notificaciones más elegante
             }
 
             // Actualizar filtros activos
-            actualizarFiltros() {
-                
-            }
+            actualizarFiltros(filtroActivo) {
+                this.filtros.forEach(btn => {
+                    if (btn.getAttribute('data-filtro') === filtroActivo) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            } 
         }
 
         // ========== CONTROLADOR ==========
@@ -219,39 +312,117 @@
 
             // Inicializar eventos de la interfaz
             inicializarEventos() {
-                
+                // Evento para agregar productos al carrito
+                this.vista.productosContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('btn-agregar')) {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        this.agregarAlCarrito(id);
+                    }
+                });
+
+                // Evento para modificar cantidad en el carrito
+                this.vista.carritoItems.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cantidad-btn')) {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        const accion = e.target.getAttribute('data-accion');
+                        this.modificarCantidad(id, accion);
+                    }
+                    
+                    if (e.target.classList.contains('btn-eliminar')) {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        this.eliminarDelCarrito(id);
+                    }
+                });
+
+                // Evento para realizar compra
+                this.vista.btnComprar.addEventListener('click', () => {
+                    this.realizarCompra();
+                });
+
+                // Eventos para filtros
+                this.vista.filtros.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const filtro = e.target.getAttribute('data-filtro');
+                        this.filtrarProductos(filtro);
+                    });
+                });
             }
 
-            // Cargar productos en la vista
-            cargarProductos() {
+           // Cargar productos en la vista
+            cargarProductos(filtro = 'todos') {
+                const productos = this.modelo.obtenerProductosPorCategoria(filtro);
+                this.vista.mostrarProductos(productos);
+                this.vista.actualizarFiltros(filtro);
             }
 
             // Filtrar productos por categoría
             filtrarProductos(categoria) {
-                
+                this.cargarProductos(categoria);
             }
 
             // Agregar producto al carrito
-            agregarAlCarrito() {
-
+            agregarAlCarrito(id) {
+                const producto = this.modelo.obtenerProductoPorId(id);
+                
+                if (producto && producto.estaDisponible()) {
+                    this.carrito.agregarProducto(producto);
+                    this.vista.mostrarCarrito(this.carrito);
+                    this.vista.mostrarMensaje(`${producto.nombre} agregado al carrito`);
+                } else {
+                    this.vista.mostrarMensaje('Producto no disponible', 'error');
+                }
             }
 
             // Eliminar producto del carrito
-            eliminarDelCarrito() {
-                
+            eliminarDelCarrito(id) {
+                this.carrito.eliminarProducto(id);
+                this.vista.mostrarCarrito(this.carrito);
             }
 
             // Modificar cantidad de producto en el carrito
-            modificarCantidad() {
+            modificarCantidad(id, accion) {
+                const item = this.carrito.items.find(item => item.producto.id === id);
                 
+                if (item) {
+                    let nuevaCantidad = item.cantidad;
+                    
+                    if (accion === 'sumar') {
+                        nuevaCantidad++;
+                    } else if (accion === 'restar') {
+                        nuevaCantidad--;
+                    }
+                    
+                    this.carrito.actualizarCantidad(id, nuevaCantidad);
+                    this.vista.mostrarCarrito(this.carrito);
+                }
             }
 
             // Realizar compra
             realizarCompra() {
+                if (this.carrito.items.length === 0) {
+                    this.vista.mostrarMensaje('El carrito está vacío', 'error');
+                    return;
+                }
 
+                const resultado = this.carrito.realizarCompra();
+                
+                if (resultado.exito) {
+                    this.vista.mostrarMensaje(resultado.mensaje, 'exito');
+                    this.vista.mostrarCarrito(this.carrito);
+                    this.cargarProductos(); // Recargar productos para actualizar stock
+                } else {
+                    this.vista.mostrarMensaje(resultado.mensaje, 'error');
+                }
             }
         }
+        // ========== INICIALIZACIÓN ==========
 
+        // Inicializar la aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            const inventario = new Inventario();
+            const vista = new Vista();
+            new Controlador(inventario, vista);
+        });
     </script>
 </body>
 </html>
