@@ -6,7 +6,29 @@
     <title>Tienda Las Manzanitas</title>
 </head>
 <body>
+    <div class="container">
+        <main>
+            <div class="filtros">
+                <button class="filtro-btn active" data-filtro="todos">Todas las frutas</button>
+                <button class="filtro-btn" data-filtro="tropical">Frutas Tropicales</button>
+                <button class="filtro-btn" data-filtro="citrico">Cítricos</button>
+                <button class="filtro-btn" data-filtro="frutilla">Frutillas</button>
+            </div>
+            
+            <div class="productos" id="productos-container">
+                <!-- Los productos se cargarán aquí dinámicamente -->
+            </div>
+        </main>
 
+        <aside class="carrito">
+            <h2>🛒 Tu Carrito</h2>
+            <div class="carrito-items" id="carrito-items">
+                <!-- Los items del carrito se cargarán aquí dinámicamente -->
+            </div>
+            <div class="carrito-total" id="carrito-total">Total: $0.00</div>
+            <button class="btn-comprar" id="btn-comprar">Realizar Compra</button>
+        </aside>
+    </div>
     <script>
         // ========== MODELO ==========
 
@@ -103,11 +125,11 @@
                 }
             }
 
-            // Calcular el total del carrito
+            // Calcular el total del carrito *FIXIT
             calcularTotal() {
-                return this.items.reduce((total, item)=>{
-                    return total+(item.producto.precio * item.producto.cantidad);
-                },0);
+                return this.items.reduce((total, item) => {
+                    return total + (item.producto.precio * item.cantidad);
+                }, 0);
             }
 
             // Vaciar el carrito
@@ -281,8 +303,8 @@
                 this.carritoTotal.textContent = `Total: $${carrito.calcularTotal().toFixed(2)}`;
             }
 
-            // Mostrar mensaje al usuario
-            mostrarMensaje() {
+            // Mostrar mensaje al usuario *FIXIT
+            mostrarMensaje(mensaje) {
                alert(mensaje); // En una aplicación real, usaríamos un sistema de notificaciones más elegante
             }
 
