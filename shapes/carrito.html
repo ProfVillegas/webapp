@@ -1,35 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda Las Manzanitas</title>
     <style>
-        *,body{
-           margin: 0;
-           padding: 0;
-           line-height: normal; 
+        @import url('https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Momo+Signature&family=Stack+Sans+Headline:wght@200..700&display=swap');
+
+        *,
+        body {
+            margin: 0;
+            padding: 0;
+            line-height: normal;
+            font-family: "Stack Sans Headline", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+
         }
-        body{
-            background: #ecf8be;
+
+        body {
+            background: #1bb5d7;
         }
-        .container{
-            margin: 0 auto;
+
+        .container {
             max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
         }
-        .filtros{
-            display:inline-block;
+
+        .productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            /*minmax ancho máximo*/
+            gap: 0.5rem;
+            /*Separación*/
+        }
+
+        .producto-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+
+        .filtros {
+            display: inline-block;
             background-color: aquamarine;
             padding: 10px;
+            flex-flow: row wrap;
+            display: flex;
+            align-items: stretch;
         }
-        .producto-card{
-            width: 150px;
+
+        .filtros button {
+            flex-grow: 1;
+            padding: 5px 10px;
+            margin: 5px;
+        }
+
+        .producto-card {
             display: inline-block;
             background-color: aqua;
-            margin: 10px;
+        }
+
+        .carrito {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .carrito h2 {
+            color: #2E7D32;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E8F5E9;
+        }
+
+        .carrito-items {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .carrito-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #E8F5E9;
+        }
+
+        .carrito-item-info h4 {
+            color: #2E7D32;
+            margin-bottom: 0.3rem;
+        }
+
+        .carrito-item-cantidad {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cantidad-btn {
+            background: #E8F5E9;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .cantidad-btn:disabled {
+            background: #f0f0f0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .carrito-total {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2E7D32;
+            text-align: right;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #E8F5E9;
+        }
+
+        .btn-comprar {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-comprar:hover {
+            background-color: #F57C00;
+        }
+
+        .btn-comprar:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .vacio {
+            text-align: center;
+            color: #999;
+            padding: 2rem;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <main>
@@ -39,7 +180,7 @@
                 <button class="filtro-btn" data-filtro="citrico">Cítricos</button>
                 <button class="filtro-btn" data-filtro="frutilla">Frutillas</button>
             </div>
-            
+
             <div class="productos" id="productos-container">
                 <!-- Los productos se cargarán aquí dinámicamente -->
             </div>
@@ -73,23 +214,23 @@
             }
 
             // Método para verificar disponibilidad
-            estaDisponible(cantidad =1) {
-                return this.stock>=cantidad;
-                
+            estaDisponible(cantidad = 1) {
+                return this.stock >= cantidad;
+
             }
 
             // Método para reducir stock
             reducirStock(cantidad = 1) {
-                if(this.estaDisponible(cantidad)){
-                    this.stock-=cantidad;
+                if (this.estaDisponible(cantidad)) {
+                    this.stock -= cantidad;
                     return true;
                 }
                 return false;
             }
 
             // Método para aumentar stock
-            aumentarStock(cantidad =1) {
-                this.stock+=cantidad;
+            aumentarStock(cantidad = 1) {
+                this.stock += cantidad;
             }
         }
 
@@ -103,12 +244,12 @@
 
             // Polimorfismo: Sobrescribimos el método obtenerInfo
             obtenerInfo() {
-               return `${this.nombre} : $ ${this.precio.toFixed(2)} (${this.temporada})`;
+                return `${this.nombre} : $ ${this.precio.toFixed(2)} (${this.temporada})`;
             }
 
             // Método específico para frutas
             esDeTemporada() {
-                const mesActual = new Date().getMonth()+1;
+                const mesActual = new Date().getMonth() + 1;
                 return this.temporada.includes(mesActual);
             }
         }
@@ -121,31 +262,31 @@
 
             // Agregar producto al carrito
             agregarProducto(producto, cantidad = 1) {
-                const itemExist = this.items.find(item=>item.producto.id===producto.id);
-                if(itemExist){
-                    itemExist.cantidad+=cantidad;
+                const itemExist = this.items.find(item => item.producto.id === producto.id);
+                if (itemExist) {
+                    itemExist.cantidad += cantidad;
                 } else {
                     this.items.push({
-                        producto:producto,
-                        cantidad:cantidad
+                        producto: producto,
+                        cantidad: cantidad
                     });
                 }
             }
 
             // Eliminar producto del carrito
             eliminarProducto(id) {
-                this.items=this.items.filter(item=> item.producto.id !==id);
+                this.items = this.items.filter(item => item.producto.id !== id);
 
             }
 
             // Actualizar cantidad de un producto
             actualizarCantidad(id, cantidad) {
-                const item = this.items.find(item => item.producto.id===id);
-                if(item){
-                    if(cantidad<=0){
+                const item = this.items.find(item => item.producto.id === id);
+                if (item) {
+                    if (cantidad <= 0) {
                         this.eliminarProducto(id);
                     } else {
-                        item.cantidad=cantidad;
+                        item.cantidad = cantidad;
                     }
                 }
             }
@@ -159,27 +300,40 @@
 
             // Vaciar el carrito
             vaciar() {
-                this.items=[];
+                this.items = [];
             }
 
             // Realizar compra (reducir stock de productos)
             realizarCompra() {
-                const productosSinStock=[];
+                const productosSinStock = [];
 
-                this.items.forEach( item =>{
-                    if(!item.producto.estaDisponible(item.cantidad)){
+                // Verificar stock disponible
+                this.items.forEach(item => {
+                    if (!item.producto.estaDisponible(item.cantidad)) {
                         productosSinStock.push(item.producto.nombre);
                     }
                 });
 
-                if(productosSinStock.length>0){
-                    return{
-                        exito:false,
-                        mensaje:`No hay suficiente stock para: ${productosSinStock.join(', ')}`,
-                        total:total
-                    }
+                if (productosSinStock.length > 0) {
+                    return {
+                        exito: false,
+                        mensaje: `No hay suficiente stock para: ${productosSinStock.join(', ')}`
+                    };
                 }
 
+                // Reducir stock
+                this.items.forEach(item => {
+                    item.producto.reducirStock(item.cantidad);
+                });
+
+                const total = this.calcularTotal();
+                this.vaciar();
+
+                return {
+                    exito: true,
+                    mensaje: `¡Compra realizada con éxito! Total: $${total.toFixed(2)}`,
+                    total: total
+                };
             }
         }
 
@@ -192,9 +346,9 @@
 
             // Cargar productos de ejemplo
             cargarProductosIniciales() {
-                this.productos=[
-                    new Fruta(1,"Manzana Roja",48.50,50,"frutilla",[9,10,11,12],"Argentina"),
-                    new Fruta(2, "Platano Chiapas",17.40,100,'tropical',[1,2,3,4,5,6,7,8,9,10,11,12],"México"),
+                this.productos = [
+                    new Fruta(1, "Manzana Roja", 48.50, 50, "frutilla", [9, 10, 11, 12], "Argentina"),
+                    new Fruta(2, "Platano Chiapas", 17.40, 100, 'tropical', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "México"),
                     new Fruta(3, "Naranja", 1.50, 30, "citrico", [5, 6, 7, 8, 9, 10], "España"),
                     new Fruta(4, "Fresa", 2.50, 20, "frutilla", [3, 4, 5, 6], "México"),
                     new Fruta(5, "Piña", 3.00, 15, "tropical", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "Costa Rica"),
@@ -241,28 +395,28 @@
             // Mostrar productos en la interfaz
             mostrarProductos(productos) {
                 //Inicializamos el conteedor de productor en blanco
-                 this.productosContainer.innerHTML = '';
-                 
-                 //Se verifica que exista algún producto
-                 if (productos.length === 0) {
+                this.productosContainer.innerHTML = '';
+
+                //Se verifica que exista algún producto
+                if (productos.length === 0) {
                     this.productosContainer.innerHTML = '<div class="vacio">No hay productos disponibles</div>';
                     return;
                 }
 
                 //Se hace el listado de iconos
                 // Emoji representativo para cada fruta usando el ID del producto
-                    const emojis = {
-                        1: "🍎",
-                        2: "🍌",
-                        3: "🍊",
-                        4: "🍓",
-                        5: "🍍",
-                        6: "🍋",
-                        7: "🍇",
-                        8: "🥭",
-                        9: "🍐",
-                        10: "🥝"
-                    };
+                const emojis = {
+                    1: "🍎",
+                    2: "🍌",
+                    3: "🍊",
+                    4: "🍓",
+                    5: "🍍",
+                    6: "🍋",
+                    7: "🍇",
+                    8: "🥭",
+                    9: "🍐",
+                    10: "🥝"
+                };
 
                 //Si existe ,se recorrre todos los productos del array
                 productos.forEach(producto => {
@@ -271,8 +425,8 @@
 
                     //Se le agrega la clase al DIV nuevo
                     productoCard.className = 'producto-card';
-                    
-                    
+
+
                     //Si no existe arreglo se toma como predeterminado el primer icono
                     const emoji = emojis[producto.id] || "🍎";
 
@@ -292,7 +446,7 @@
                     //Se agrega al contenedor el producto el nuevo producto
                     this.productosContainer.appendChild(productoCard);
                 });
-                
+
             }
 
             // Mostrar items del carrito
@@ -308,7 +462,7 @@
                 carrito.items.forEach(item => {
                     const carritoItem = document.createElement('div');
                     carritoItem.className = 'carrito-item';
-                    
+
                     carritoItem.innerHTML = `
                         <div class="carrito-item-info">
                             <h4>${item.producto.nombre}</h4>
@@ -330,7 +484,7 @@
 
             // Mostrar mensaje al usuario *FIXIT
             mostrarMensaje(mensaje) {
-               alert(mensaje); // En una aplicación real, usaríamos un sistema de notificaciones más elegante
+                alert(mensaje); // En una aplicación real, usaríamos un sistema de notificaciones más elegante
             }
 
             // Actualizar filtros activos
@@ -342,7 +496,7 @@
                         btn.classList.remove('active');
                     }
                 });
-            } 
+            }
         }
 
         // ========== CONTROLADOR ==========
@@ -352,7 +506,7 @@
                 this.modelo = modelo;
                 this.vista = vista;
                 this.carrito = new Carrito();
-                
+
                 this.inicializarEventos();
                 this.cargarProductos();
             }
@@ -374,7 +528,7 @@
                         const accion = e.target.getAttribute('data-accion');
                         this.modificarCantidad(id, accion);
                     }
-                    
+
                     if (e.target.classList.contains('btn-eliminar')) {
                         const id = parseInt(e.target.getAttribute('data-id'));
                         this.eliminarDelCarrito(id);
@@ -395,7 +549,7 @@
                 });
             }
 
-           // Cargar productos en la vista
+            // Cargar productos en la vista
             cargarProductos(filtro = 'todos') {
                 const productos = this.modelo.obtenerProductosPorCategoria(filtro);
                 this.vista.mostrarProductos(productos);
@@ -410,7 +564,7 @@
             // Agregar producto al carrito
             agregarAlCarrito(id) {
                 const producto = this.modelo.obtenerProductoPorId(id);
-                
+
                 if (producto && producto.estaDisponible()) {
                     this.carrito.agregarProducto(producto);
                     this.vista.mostrarCarrito(this.carrito);
@@ -429,16 +583,16 @@
             // Modificar cantidad de producto en el carrito
             modificarCantidad(id, accion) {
                 const item = this.carrito.items.find(item => item.producto.id === id);
-                
+
                 if (item) {
                     let nuevaCantidad = item.cantidad;
-                    
+
                     if (accion === 'sumar') {
                         nuevaCantidad++;
                     } else if (accion === 'restar') {
                         nuevaCantidad--;
                     }
-                    
+
                     this.carrito.actualizarCantidad(id, nuevaCantidad);
                     this.vista.mostrarCarrito(this.carrito);
                 }
@@ -452,7 +606,7 @@
                 }
 
                 const resultado = this.carrito.realizarCompra();
-                
+
                 if (resultado.exito) {
                     this.vista.mostrarMensaje(resultado.mensaje, 'exito');
                     this.vista.mostrarCarrito(this.carrito);
@@ -472,4 +626,5 @@
         });
     </script>
 </body>
+
 </html>
